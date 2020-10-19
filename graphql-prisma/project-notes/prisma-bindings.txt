@@ -1,0 +1,26 @@
+USING QUERY ARGS TO SELECT ONLY DATA MATCHING 
+Using prisma bindings api to get collection of users.
+
+Check for args, in particular
+
+
+// Query.js
+users(parent, args, { db, prisma }, info) {
+    const opArgs = {};
+// Check if query is present
+    if (args.query) {
+        // Add "where" key to opArgs object and assign a object.
+        opArgs.where = {
+            // Add OR key to assigned object with an array value.
+            OR: [
+                {
+                    name_contains: args.query,
+                },
+                {
+                    email: args.query,
+                },
+            ],
+        };
+    }
+    return prisma.query.users(opArgs, info);
+}

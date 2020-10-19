@@ -1,0 +1,9 @@
+schema: http://localhost:4466
+documents: ''
+extensions:
+    prisma: prisma/prisma.yml
+    codegen:
+        generates:
+            src/generated/schema.graphql:
+                plugins:
+                    - schema-ast

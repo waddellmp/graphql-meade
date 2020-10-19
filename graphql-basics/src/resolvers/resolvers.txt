@@ -1,0 +1,22 @@
+Resolvers
+
+A resolver is a function that resolves a value for a type or field in a schema.
+
+GraphQL Api Schema (schema.graphql)
+type User {
+    id: ID!
+    name: String!
+    email: String!
+    posts: [Post!]!
+    comments: [Comment!]!
+}
+
+Resolver (User.js)
+const User = {
+    posts(parent, args, ctx, info){
+        return graphqlApi.users();
+    },
+    comments(parent, args, ctx, info){
+        return graphqlApi.comments();
+    }
+}

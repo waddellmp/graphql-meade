@@ -1,0 +1,108 @@
+Auth Token Creation with JSON Web Tokens (JWT)
+
+A JWT is a token used for authentication.
+
+A JWT is a token packaged up in JSON format. This is great
+because JSON can be transported over HTTP.
+
+General Process of JWT Creation:
+
+1. Take in password at login screen
+2. Validate the password
+3. Hash the password
+4. Generate auth token
+
+For this project we will use https://www.npmjs.com/package/jsonwebtoken 
+to create the json web token.
+
+Installation of JWT package
+npm i jsonwebtoken
+
+Use jsonwebtoken in Mutation.js
+
+1. Go to Mutation.js
+2. Create token using 
+    //First param is the payload.
+    //Second is the secret, which is stored on the nodejs server.
+    //The result of the function call is a really long string, the token, to be passed back to the client
+    jwt.sign({id: 46}, secret)
+
+    //optionally if we wanted decode the token to get the payload object, we could use jwt.decode(token)
+    //you don't need the secret to decode the payload
+    //decoding a payload will result in the object with the properties you specified plus an additional jwt generated property 
+    //called "iat" which stands for issued at a timestamp.
+    jwt.decode(token)
+
+    //In order to verify whether a token was signed or created with a specific secret, use the jwt.verify().
+    //The verify method checks the token against the secret.
+    //returns the decoded and verified data. If it doesn't match up then a jswonwebtoken error is thrown
+    jwt.verify(token, secret);
+
+JWT Token Parts
+
+JWT tokens is a really long string with 2 periods splitting the string up into three distinct parts.
+
+Each part is what makes up the JWT token, they are as follows:
+
+Token
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+eyJpZCI6NDYsImlhdCI6MTYwMTAwNTcyNn0.
+2yxrab-IxY5mAcF37qDBpyaYcJ9HxjLmIkZLv3NZaMI
+
+The '.' separate the string into 3 parts: Header, Payload, Signature
+
+Header
+Specifies the algorithim used to create the encoded token and denotes the token type
+{
+    "alg": "HS256",
+    "typ": "JWT"
+}
+
+Payload
+Is the data that we used to sign or create the token (password in our app). This is a unique piece of data.
+{
+    "password": "somepasswordstring",
+    "iat": 153434355
+}
+
+Signature
+The result of encoding the header and payload plus the secret. This is nothing more than a hash.
+HMACSHA256(
+    base64UrlEncode(header) + "." +
+    base64UrlEncode(payload),
+    your-256-bit-secret
+)
+
+Base64encoded data
+The header and payload are base64encoded meaning we can take the first 2 strings separated by periods and paste that into
+a base 64 decoder to view the original payload.
+
+Add JWT to CreateUser().
+1. In Mutation.js import jwt from jsonwebtoken.
+2. Inside createUser() we need to return an auth token plus the User.
+3. The user can then store the token and make authorized requests by including a header in the HTTP request:
+
+{
+    "Authorization": "Bearer TOKEN"
+}
+
+The server can then allow authenticated users access to certain data. Such as createPost().
+
+Authentication Flow for createPost
+
+1. To create a post the client must have a valid token in the HTTP header.
+2. The client must have {"Authorization": "Bearer TOKEN"} in HTTP header.
+3. The nodejs server must read the incoming request header by accessing the request object inside context of the resolver function.
+4. Split the Authorization header to verify the token is valid and get the token decoded.
+5. Read the userId (payload) with createPost query.
+
+Comparing an Unhashed Password against the Corresponding Hashed Version
+
+// Fetch user async and handle the password/hashed comparison via promise chaining
+const user = fetchUser(email).then(({ id, email, hashedPassword }) => {
+    const passwordMatch = bcrypt.compare(password, hashedPassword);
+    if (!passwordMatch) throw new Error('User invalid');
+
+    return user;
+});
+

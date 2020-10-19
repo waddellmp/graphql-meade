@@ -1,0 +1,36 @@
+As of right now the prisma api server (running in docker) is publically accessbile.
+
+This is not ideal as users can interact directly with the database instead of using the graphql yoga nodejs server.
+
+We should be funneling all http requests through the nodejs server and not allowing access from the client to the api server.
+
+To achieve this we need to register a secret with the api server by adding the following to the prisma/prisma.yml file:
+
+endpoint: http://localhost:4466
+datamodel: datamodel.graphql
+secret: thisismysupersecrettext
+
+generate:
+    - generator: graphql-schema
+      output: ../src/generated/schema.graphql
+
+
+The secret key is what the request must have to access the api server.
+
+
+To have the nodejs communicate to the api server, add the secret inside the prism constructor in prisma.js
+
+const prisma = new Prisma({
+    typeDefs: 'src/generated/schema.graphql',
+    endpoint: 'http://localhost:4466',
+    secret: 'thisismysupersecrettext',
+});
+
+
+To be able to communicate with the prisma api locally we can use the command: prisma token
+This will generate a jwt for us to paste into the Authorization header at the GraphiQL interface.
+
+{
+    "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InNlcnZpY2UiOiJkZWZhdWx0QGRlZmF1bHQiLCJyb2xlcyI6WyJhZG1pbiJdfSwiaWF0IjoxNjAyMTMyODU1LCJleHAiOjE2MDI3Mzc2NTV9.SxemjWDnf-oqAeR_RyixvrLLbldhVzKc9_FMkdCJS7A"
+}
+

@@ -1,0 +1,34 @@
+Context
+
+The 3rd argument for graphQL resolver functions.
+// resolvers/Query.js
+const Query = {
+    users(parent, args, ctx, info){
+        // get users
+    }
+}
+
+Context is an object which contains important data 
+and each resolver function is passed this value.
+
+Context Registration for GraphQL Yoga Server
+
+// index.js
+import {Query, Mutation, User, Comment, Post} from "resolvers";
+const server = new GraphQLServer({
+    ...
+    context: {
+        Query, Mutation, User, Comment, Post
+    }
+});
+
+Referencing ctx 
+// schema.graphql
+comments(parent, args, ctx, info){
+    ...
+    // do so stuff with ctx
+}
+
+
+
+

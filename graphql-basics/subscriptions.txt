@@ -1,0 +1,67 @@
+Subscriptions
+
+GraphQL supports subscription based communication through web sockets.
+
+Web sockets allow a client app to maintain a stable connection to a server.
+
+Subscription allows the server to transmit data to a client in real-time.
+
+
+Example
+
+A user writes a comment on a post. When the user posts a comment via http,
+the server can update all other clients with the new comment using a subscription.
+
+Process to create a subscription.
+
+Step 1
+
+Go to the type definition file schema.graphql. And Add
+
+type Subscription {
+    count: Int!
+}
+
+
+Step 2
+
+Go to index.js and import PubSub from graphql-yoga. Also import the new resolver Subscription (explained in step 3)
+(Each grapql framework has its own subscription process.)
+
+import { GraphQLServer, PubSub } from 'graphql-yoga';
+import {... Subscription } from './resolvers';
+...
+
+const pubsub = new PubSub();
+
+const server = new GraphQLServer({
+    typeDefs: './src/schema.graphql',
+    resolvers: { Query, Mutation, User, Post, Comment, Subscription },
+    context: { db, pubsub },
+});
+
+...
+
+Step 3
+
+Create a new file at resolvers/Subscription.js
+
+const Subscription = {
+    count: {
+        subscribe(parent, args, { pubsub }, info) {
+            let count = 0;
+            setInterval(() => {
+                count++;
+                pubsub.publish('count', {
+                    count,
+                });
+            }, 1000);
+            // asyncIterator(channelName: string, )
+            return pubsub.asyncIterator('count');
+        },
+    },
+};
+
+export { Subscription as default };
+
+

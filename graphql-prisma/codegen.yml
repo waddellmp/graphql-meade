@@ -1,0 +1,4 @@
+schema:
+    - http://localhost:4466/graphql:
+          headers:
+              Authorization: 'Bearer thisismysupersecrettext'

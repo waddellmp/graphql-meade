@@ -1,0 +1,126 @@
+Prisma
+
+Is like an ORM that helps shape your API in correspondence with your DB.
+
+Client or Browser => GraphQL API (hosted on a nodejs webserver) => Database
+
+The web server can be any language/framework that supports GraphQL implementation.
+
+What do we need to communicate with a db?
+
+A Native Driver that supports DBMS (mySQL, MSSQL, PostGreSQL, MongoDB).
+
+Native Drivers are very bare bones implementation that will allow us to interact with db,
+however, it is cumbersome to use.
+
+An ORM (object relational database mapper) uses the Native Drivers under the hood and performs
+object model relaitonal mapping. It also is more developer friends while it abstracts the Native Driver
+details.  
+
+Examples of an ORM: (Sequelize or Mongoose)
+
+Bottom line, ORMs allow us to easily model our data.
+
+---
+Back to Prisma
+
+Prisma is database agnostic. 
+
+We will use Postgres SQL hosted on heroku to as our database layer.
+
+We will also use PGAdmin 4 as a db gui to see our data.
+
+PGAdmin 4 Credentials
+Pass: beckett19
+
+Create db name to match my heroku app name.
+Name: waddell-prisma-dev-server
+
+To use Prisma we will need to also download Docker. Already have it downloaded.
+
+*Note about heroku postgresql, they change the database, user, password frequently on the hobbyl plan.
+So don't be alarmed if your credentials don't work the next day.
+
+---
+
+Using PGAdmin 4 gui tool to view the postgresql database.
+
+Find the your db name in the cluster by using CMD + F.
+
+Expand the database: Database > Schemas 
+
+Inside you will find 2 standard schemas generated (management, public).
+
+We will use the public schema.
+
+*COURSE used an older version of the postgresql db so it will look different in Meade's course.
+
+---
+
+Start Developing
+
+To begin using the development environement you will need to initialize the following:
+- Start the docker container running the prisma server
+- Create the boilerplate prisma code inside your project
+
+To do this install the following npm package: "prisma": "^1.34.10"
+
+npm i prisma --save-dev
+
+*I chose to install this as a dev dependency instead of installing it globally. 
+
+
+Add the following scripts to package.json:
+
+{
+    ...
+    "scripts": {
+        "prisma-init": "prisma init prisma",
+        "prisma-deploy": "prisma deploy prisma"
+    }
+}
+
+Next, run the prisma init script to walk-through the database/docker environement setup.
+
+Next, run the prisma deploy command to script to generate the prisma boilerplate and deploy the service changes.
+
+prisma-deploy 
+
+As you create data models with the graphql code, you need to push this as a service change to the running prisma. This
+allows your changes to take affect on the running prisma client.
+
+Prisma Relationships and Removing Records
+
+There are two default behaviors for prisma when removing records.
+
+Cascade: deletes the records from the db
+SET_NULL (default): sets records to null
+
+If your datamodel involves a non-scalar type like User and it has a one to many Relationship
+to Comment:
+
+type User {
+    ...
+    comments: [Comment!]!
+}
+
+type Comment {
+    ...
+    author: User!
+}
+
+Removing a User would and using SET_NULL behavior would cause an error. Because
+author can never accept null. You would need to use CASCADE.
+
+bidirectional Relationships
+
+type User {
+    comments: [Comment!]! @relation(name: "CommentToUser", onDelete: CASCADE)
+}
+
+type Comment {
+    author: User! @relation(name: "CommentToUser", onDelete: SET_NULL)
+}
+
+Note that is not possible to set both ends of a bidirectional relation to CASCADE.
+
